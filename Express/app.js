@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-app.use(express.json());
+// app.use(express.json());
 const app = express();
 const port = 8000;
 let dataStorage = [{
@@ -23,14 +23,12 @@ app.get('/tasks', (request, response) => {
 
 app.get('/tasks/id/:id', (request, response) => {
     let task = dataStorage.filter(
-        iterator => Number(request.params.id) == iterator.id);
+        iterator => parseInt(request.params.id) === iterator.id);
     if (task.length == 0) {
-        return response.statusCode(400).send('Given id not exist!!');
+        return response.send('Given id not exist!!');
     }
-    response.json(
-
-    );
-
+    response.
+        json(task);
 });
 app.post('/tasks', (request, response) => {
     let requestData = request.body;
@@ -44,7 +42,7 @@ app.put('/tasks/id/:id', (request, response) => {
     let id = request.params.id;
     let task = {};
     dataStorage.map((iterator, index) => {
-        if (iterator.id === id) {
+        if (iterator.id === parseInt(id)) {
             taskComplete(iterator, index);
             task = iterator;
         }
@@ -54,15 +52,15 @@ app.put('/tasks/id/:id', (request, response) => {
 });
 
 app.patch('/tasks/isComplete/:isComplete', (request, response) => {
-    let isComplete = request.params[isComplete];
+    let isComplete = (request.params.isComplete);
     const dataRequested = taskCompleteUtiltiy(isComplete);
     return response.json(dataRequested);
 
 });
 app.delete('/tasks/id/:id', (request, response) => {
-    let id = request.params.id;
+    const id = parseInt(request.params.id);
     deleteTask(id);
-    return response.statusCode(200);
+    return response.send('Deleted Task');
 });
 
 
@@ -85,12 +83,11 @@ const taskComplete = (jsonObject, index) => {
 
 
 const deleteTask = (idToBeDeleted) => {
-    dataStorage = dataStorage.reduce((accumulator, iterator) => {
-        if (iterator.id != idToBeDeleted) {
-            accumulator.push(iterator);
-        }
-        return accumulator;
-    }, []);
+    const index = dataStorage.findIndex(iterator => iterator.id === idToBeDeleted);
+    if (index === -1) {
+        return;
+    }
+    dataStorage.pop(index);
 };
 // const deleteTaskIsComplete = () => {
 //     dataStorage = dataStorage.reduce((accumulator, iterator) => {
@@ -100,9 +97,9 @@ const deleteTask = (idToBeDeleted) => {
 //         return accumulator;
 //     }, []);
 // };
-const taskCompleteUtiltiy = () => {
-    dataStorage = dataStorage.reduce((accumulator, iterator) => {
-        if (iterator.isComplete != true) {
+const taskCompleteUtiltiy = (isComplete) => {
+    return dataStorage.reduce((accumulator, iterator) => {
+        if (iterator.isComplete != Boolean( isComplete)) {
             accumulator.push(iterator);
         }
         return accumulator;
